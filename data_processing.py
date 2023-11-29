@@ -3,6 +3,12 @@ import csv, os
 __location__ = os.path.realpath(
     os.path.join(os.getcwd(), os.path.dirname(__file__)))
 
+movies = []
+with open(os.path.join(__location__, 'movies.csv')) as f:
+    rows = csv.DictReader(f)
+    for r in rows:
+        movies.append(dict(r))
+
 class DB:
     def __init__(self):
         self.database = []
@@ -96,7 +102,33 @@ class Table:
                 aggregate_val_list.append(aggregate_val)
             pivot_table.append([item, aggregate_val_list])
         return pivot_table
-
+    
+    def insert_row(self,dictionary):
+        self.table.append(dictionary)
+    def update_row(self,primary_attribute,primary_attribute_value,update_attribute,update_value):
+        for i in range(len(self.table)):
+            if self.table[i][primary_attribute]==primary_attribute_value:
+                self.table[i][update_attribute]=update_value
     def __str__(self):
         return self.table_name + ':' + str(self.table)
 
+table1=Table("movies",movies)
+myDB=DB()
+myDB.insert(table1)
+mymovie=myDB.search("movies")
+myfantasy=mymovie.filter(lambda x: x["Genre"]=="Fantasy").aggregate(lambda x: len(x),"Year")
+print(f"Number of Fantasy movies : {myfantasy}")
+dict1 = {}
+dict1['Film'] = 'The Shape of Water'
+dict1['Genre'] = 'Fantasy'
+dict1['Lead Studio'] = 'Fox'
+dict1['Audience score %'] = '72'
+dict1['Profitability'] = '9.765'
+dict1['Rotten Tomatoes %'] = '92'
+dict1['Worldwide Gross'] = '195.3'
+dict1['Year'] = '2017'
+mymovie.insert_row(dict1)
+myfantasy=mymovie.filter(lambda x: x["Genre"]=="Fantasy").aggregate(lambda x: len(x),"Year")
+print(f"Number of Fantasy movies : {myfantasy}")
+mymovie.update_row("Film","A Serious Man","Year","2022")
+print(mymovie)
